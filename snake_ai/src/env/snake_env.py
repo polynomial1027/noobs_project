@@ -259,9 +259,20 @@ class SnakeEnv:
 
         for index, point in enumerate(self.snake):
             rect = pygame.Rect(point.x, point.y, self.block_size, self.block_size)
-            color = snake_head_color if index == 0 else snake_body_color
-            pygame.draw.rect(self.display, color, rect)
-            pygame.draw.rect(self.display, background, rect, 1)
+
+            if index == 0:
+                color = (90, 255, 120)
+            else:
+                ratio = index / max(len(self.snake) - 1, 1)
+
+                red = int(90 * (1 - ratio) + 180 * ratio)
+                green = int(230 * (1 - ratio) + 70 * ratio)
+                blue = int(120 * (1 - ratio) + 230 * ratio)
+
+                color = (red, green, blue)
+
+            pygame.draw.rect(self.display, color, rect, border_radius=4)
+            pygame.draw.rect(self.display, (10, 10, 10), rect, 1, border_radius=4)
 
         food_rect = pygame.Rect(self.food.x, self.food.y, self.block_size, self.block_size)
         pygame.draw.rect(self.display, food_color, food_rect)
