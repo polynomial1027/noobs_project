@@ -21,4 +21,4 @@ pytest
 tqdm
 requests
 rich
-mediapipe
+mediapipe==0.10.14
