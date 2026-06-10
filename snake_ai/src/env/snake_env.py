@@ -8,6 +8,8 @@ from typing import List, Tuple
 import numpy as np
 import pygame
 
+from snake_ai.src.rewards.reward_functions import calculate_reward, manhattan_distance
+
 
 Point = namedtuple("Point", "x y")
 
@@ -23,7 +25,7 @@ class SnakeEnv:
     """
     Pygame Snake environment for both human play and AI training.
 
-    Action space:
+    Action space for AI:
         0 = straight
         1 = turn right
         2 = turn left
@@ -31,6 +33,12 @@ class SnakeEnv:
     State types:
         get_state_vector() -> MLP-DQN input
         get_state_grid()   -> CNN-DQN input
+
+    Reward modes:
+        classic
+        distance
+        step_penalty
+        anti_loop
     """
 
     def __init__(
@@ -41,6 +49,7 @@ class SnakeEnv:
         speed: int = 15,
         render_mode: bool = True,
         max_steps_without_food: int = 100,
+        reward_mode: str = "classic",
     ) -> None:
         if width % block_size != 0 or height % block_size != 0:
             raise ValueError("width and height must be divisible by block_size.")
@@ -51,6 +60,7 @@ class SnakeEnv:
         self.speed = speed
         self.render_mode = render_mode
         self.max_steps_without_food = max_steps_without_food
+        self.reward_mode = reward_mode
 
         self.cols = self.width // self.block_size
         self.rows = self.height // self.block_size
@@ -61,7 +71,7 @@ class SnakeEnv:
         if self.render_mode:
             pygame.init()
             self.display = pygame.display.set_mode((self.width, self.height))
-            pygame.display.set_caption("Snake AI Environment")
+            pygame.display.set_caption(f"Snake AI Environment | reward={self.reward_mode}")
             self.clock = pygame.time.Clock()
 
         self.direction: Direction = Direction.RIGHT
@@ -75,7 +85,9 @@ class SnakeEnv:
         self.reset()
 
     def reset(self) -> np.ndarray:
-        """Reset the game and return the initial vector state."""
+        """
+        Reset the game and return the initial vector state.
+        """
         self.direction = Direction.RIGHT
 
         self.head = Point(self.width // 2, self.height // 2)
@@ -98,7 +110,13 @@ class SnakeEnv:
 
     def step(self, action: int) -> Tuple[float, bool, int]:
         """
-        Execute one action.
+        Execute one AI action.
+
+        Args:
+            action:
+                0 = straight
+                1 = turn right
+                2 = turn left
 
         Returns:
             reward: float
@@ -114,24 +132,58 @@ class SnakeEnv:
                     pygame.quit()
                     raise SystemExit
 
+        old_distance_to_food = manhattan_distance(
+            self.head.x,
+            self.head.y,
+            self.food.x,
+            self.food.y,
+        )
+
         self._move(action)
         self.snake.insert(0, self.head)
 
-        reward = 0.0
-        done = False
+        new_distance_to_food = manhattan_distance(
+            self.head.x,
+            self.head.y,
+            self.food.x,
+            self.food.y,
+        )
 
-        if self.is_collision() or self.steps_since_food > self.max_steps_without_food:
+        done = False
+        ate_food = False
+
+        died = self.is_collision() or self.steps_since_food > self.max_steps_without_food
+
+        if died:
             done = True
-            reward = -10.0
+            reward = calculate_reward(
+                reward_mode=self.reward_mode,
+                ate_food=False,
+                died=True,
+                old_distance_to_food=old_distance_to_food,
+                new_distance_to_food=new_distance_to_food,
+                steps_since_food=self.steps_since_food,
+                max_steps_without_food=self.max_steps_without_food,
+            )
             return reward, done, self.score
 
         if self.head == self.food:
             self.score += 1
-            reward = 10.0
+            ate_food = True
             self.steps_since_food = 0
             self._place_food()
         else:
             self.snake.pop()
+
+        reward = calculate_reward(
+            reward_mode=self.reward_mode,
+            ate_food=ate_food,
+            died=False,
+            old_distance_to_food=old_distance_to_food,
+            new_distance_to_food=new_distance_to_food,
+            steps_since_food=self.steps_since_food,
+            max_steps_without_food=self.max_steps_without_food,
+        )
 
         if self.render_mode:
             self.render()
@@ -144,6 +196,14 @@ class SnakeEnv:
 
         This is for keyboard play. It uses absolute direction commands
         but blocks illegal reverse movement.
+
+        Human mode keeps the original simple reward:
+            food: +10
+            death: -10
+            normal move: 0
+
+        The reward is not important for human play, but the return format
+        stays consistent with step().
         """
         if not self._is_reverse_direction(direction):
             self.direction = direction
@@ -176,7 +236,9 @@ class SnakeEnv:
         return reward, done, self.score
 
     def render(self) -> None:
-        """Draw the current game state."""
+        """
+        Draw the current game state.
+        """
         if not self.render_mode or self.display is None or self.clock is None:
             return
 
@@ -206,7 +268,12 @@ class SnakeEnv:
 
         font = pygame.font.SysFont("arial", 24)
         text = font.render(
-            f"Score: {self.score} | Steps: {self.frame_iteration} | Since food: {self.steps_since_food}",
+            (
+                f"Score: {self.score} | "
+                f"Steps: {self.frame_iteration} | "
+                f"Since food: {self.steps_since_food} | "
+                f"Reward: {self.reward_mode}"
+            ),
             True,
             text_color,
         )
@@ -216,12 +283,16 @@ class SnakeEnv:
         self.clock.tick(self.speed)
 
     def close(self) -> None:
-        """Close pygame resources."""
+        """
+        Close pygame resources.
+        """
         if self.render_mode:
             pygame.quit()
 
     def is_collision(self, point: Point | None = None) -> bool:
-        """Check wall or self collision."""
+        """
+        Check wall or self collision.
+        """
         if point is None:
             point = self.head
 
@@ -284,11 +355,13 @@ class SnakeEnv:
 
         wall_distance_left = self.head.x / max(self.width - self.block_size, 1)
         wall_distance_right = (self.width - self.block_size - self.head.x) / max(
-            self.width - self.block_size, 1
+            self.width - self.block_size,
+            1,
         )
         wall_distance_up = self.head.y / max(self.height - self.block_size, 1)
         wall_distance_down = (self.height - self.block_size - self.head.y) / max(
-            self.height - self.block_size, 1
+            self.height - self.block_size,
+            1,
         )
 
         food_dx = (self.food.x - self.head.x) / max(self.width - self.block_size, 1)
@@ -296,7 +369,10 @@ class SnakeEnv:
 
         max_snake_length = self.rows * self.cols
         snake_length_normalized = len(self.snake) / max_snake_length
-        steps_since_food_normalized = self.steps_since_food / self.max_steps_without_food
+        steps_since_food_normalized = self.steps_since_food / max(
+            self.max_steps_without_food,
+            1,
+        )
 
         state = np.array(
             [
@@ -351,7 +427,9 @@ class SnakeEnv:
         return grid
 
     def _place_food(self) -> None:
-        """Randomly place food outside the snake body."""
+        """
+        Randomly place food outside the snake body.
+        """
         while True:
             x = random.randint(0, self.cols - 1) * self.block_size
             y = random.randint(0, self.rows - 1) * self.block_size
@@ -361,7 +439,14 @@ class SnakeEnv:
                 break
 
     def _move(self, action: int) -> None:
-        """Move snake using relative action."""
+        """
+        Move snake using relative action.
+
+        Action:
+            0 = straight
+            1 = turn right
+            2 = turn left
+        """
         if action not in [0, 1, 2]:
             raise ValueError("action must be 0, 1, or 2.")
 
@@ -379,7 +464,9 @@ class SnakeEnv:
         self._move_forward()
 
     def _move_forward(self) -> None:
-        """Move one block in the current direction."""
+        """
+        Move one block in the current direction.
+        """
         x = self.head.x
         y = self.head.y
 
@@ -395,7 +482,9 @@ class SnakeEnv:
         self.head = Point(x, y)
 
     def _is_reverse_direction(self, new_direction: Direction) -> bool:
-        """Check whether the requested human direction is illegal reverse movement."""
+        """
+        Check whether the requested human direction is illegal reverse movement.
+        """
         return (
             (self.direction == Direction.RIGHT and new_direction == Direction.LEFT)
             or (self.direction == Direction.LEFT and new_direction == Direction.RIGHT)

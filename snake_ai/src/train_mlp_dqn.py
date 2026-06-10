@@ -17,6 +17,7 @@ if PROJECT_ROOT not in sys.path:
 
 from snake_ai.src.agents.mlp_dqn_agent import MLPDQNAgent
 from snake_ai.src.env.snake_env import SnakeEnv
+from snake_ai.src.rewards.reward_functions import get_available_reward_modes
 from snake_ai.src.utils.config import MLPDQNConfig, SnakeConfig
 from snake_ai.src.utils.timer import TrainingTimer
 
@@ -26,6 +27,7 @@ def train_mlp_dqn(
     render_every: int,
     save_every: int,
     checkpoint_path: str,
+    reward_mode: str,
     resume_path: str | None = None,
 ) -> None:
     snake_config = SnakeConfig()
@@ -43,6 +45,7 @@ def train_mlp_dqn(
         speed=snake_config.speed,
         render_mode=False,
         max_steps_without_food=snake_config.max_steps_without_food,
+        reward_mode=reward_mode,
     )
 
     agent = MLPDQNAgent(
@@ -66,6 +69,7 @@ def train_mlp_dqn(
     print("MLP-DQN training started.")
     print(f"Device: {agent.device}")
     print(f"State size: {dqn_config.input_size}")
+    print(f"Reward mode: {reward_mode}")
     print(f"Max episodes: {max_episodes}")
     print(f"Render every: {render_every}")
     print("-" * 80)
@@ -81,6 +85,7 @@ def train_mlp_dqn(
             speed=snake_config.speed,
             render_mode=should_render,
             max_steps_without_food=snake_config.max_steps_without_food,
+            reward_mode=reward_mode,
         )
 
         state = env.reset()
@@ -138,6 +143,7 @@ def train_mlp_dqn(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train MLP-DQN agent on Snake.")
+
     parser.add_argument(
         "--episodes",
         type=int,
@@ -163,6 +169,13 @@ def main() -> None:
         help="Path to save checkpoint.",
     )
     parser.add_argument(
+        "--reward",
+        type=str,
+        default="classic",
+        choices=get_available_reward_modes(),
+        help="Reward function mode.",
+    )
+    parser.add_argument(
         "--resume",
         type=str,
         default=None,
@@ -176,6 +189,7 @@ def main() -> None:
         render_every=args.render_every,
         save_every=args.save_every,
         checkpoint_path=args.checkpoint,
+        reward_mode=args.reward,
         resume_path=args.resume,
     )
 
