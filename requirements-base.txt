@@ -11,9 +11,6 @@ scikit-image
 pillow
 imageio
 pygame
-torch
-torchvision
-torchaudio
 jupyterlab
 notebook
 ipykernel
