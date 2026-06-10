@@ -1,0 +1,57 @@
+name: noobs
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  # Python
+  - python=3.11
+
+  # Basic tools
+  - pip
+  - ipykernel
+  - jupyterlab
+  - notebook
+
+  # Scientific computing
+  - numpy
+  - scipy
+  - pandas
+
+  # Statistics and machine learning
+  - scikit-learn
+  - statsmodels
+
+  # Visualization
+  - matplotlib
+  - seaborn
+  - plotly
+
+  # Computer vision and image processing
+  - opencv
+  - scikit-image
+  - pillow
+  - imageio
+
+  # GUI
+  - pyqt
+  - qtpy
+
+  # Game development
+  - pygame
+
+  # PyTorch CPU version
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cpuonly
+
+  # Developer tools
+  - pytest
+  - tqdm
+  - requests
+  - rich
+
+  # Optional pip packages
+  - pip:
+      - mediapipe
