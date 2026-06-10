@@ -130,8 +130,8 @@ def reward_anti_loop(
 
     if ate_food:
         return 10.0
-
-    reward = -0.01
+    else:
+        reward = -0.01
 
     if new_distance_to_food < old_distance_to_food:
         reward += 0.1
