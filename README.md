@@ -1,286 +1,392 @@
-noobs_project
+# noobs_project
 
-noobs_project 是一个用于练习 Python 开发和 GitHub 协同合作的入门项目。
+noobs_project 是一个用于练习 Python 开发、Conda 环境管理和 GitHub 协同合作的入门项目。
 
-这个项目的主要目标不是一开始就完成复杂功能，而是帮助我们熟悉：
+本项目的重点是熟悉标准协作流程：
 
-* 使用 GitHub 管理代码
-* 使用 branch 进行分支开发
-* 使用 commit 保存修改记录
-* 使用 push 上传代码
-* 使用 pull request 合并代码
-* 使用 conda 管理 Python 环境
-* 练习 Python、机器学习、统计计算、OpenCV、Pygame 和图形界面开发
+text 下载项目 → 创建环境 → 创建任务分支 → 修改代码 → 提交修改 → 推送分支 → 创建 Pull Request → 合并到 main 
 
-⸻
+---
 
-1. Project Goals
+## 1. Clone Project
 
-本项目用于练习以下内容：
+第一次使用项目时，先把 GitHub 仓库下载到本地。
 
-1. Python 项目结构搭建
-2. Conda 环境管理
-3. GitHub 双人协作流程
-4. 分支开发与合并
-5. Pull Request 使用
-6. 简单机器学习与统计计算
-7. OpenCV 图像处理
-8. Pygame 小游戏开发
-9. GUI 图形界面实验
-10. Jupyter Notebook 数据分析实验
+bash cd ~/Desktop git clone https://github.com/polynomial1027/noobs_project.git cd noobs_project 
 
-⸻
+如果你已经下载过项目，以后直接进入项目目录即可：
 
-2. Project Structure
+bash cd ~/Desktop/noobs_project 
 
-推荐项目结构如下：
+---
 
-noobs_project/
-├── README.md
-├── environment.yml
-├── requirements.txt
-├── .gitignore
-├── src/
-│   ├── main.py
-│   ├── calculator.py
-│   ├── george_part.py
-│   └── friend_part.py
-├── notebooks/
-│   └── experiment.ipynb
-├── tests/
-│   └── test_calculator.py
-├── data/
-│   └── sample.txt
-├── docs/
-│   └── experiment_log.md
-└── conflict_lab/
-    └── shared_note.md
+## 2. Create Conda Environment
 
-说明：
+本项目使用 Conda 管理 Python 环境。
 
-Path	Description
-src/	存放主要 Python 源代码
-notebooks/	存放 Jupyter Notebook 实验
-tests/	存放测试文件
-data/	存放小型示例数据
-docs/	存放项目文档和实验记录
-conflict_lab/	用于练习 Git merge conflict
-environment.yml	Conda 环境配置文件
-requirements.txt	Pip 备用依赖列表
-.gitignore	设置不需要上传到 GitHub 的文件
+第一次使用时，执行：
 
-⸻
+bash conda env create -f environment.yml 
 
-3. Environment Setup
+创建完成后，激活环境：
 
-本项目推荐使用 Conda 创建环境。
+bash conda activate noobs 
 
-Create Environment
+检查 Python 是否可用：
 
-conda env create -f environment.yml
+bash python --version 
 
-Activate Environment
+创建并激活 Conda 环境后，可以运行下面的环境检测脚本：
 
-conda activate noobs
+bash python tests/environment_test.py
 
-Update Environment
+如果所有库都安装成功，会看到类似输出：
 
-如果 environment.yml 后续有更新，可以执行：
+Environment check passed.
 
-conda env update -f environment.yml --prune
+---
 
-⸻
+## 3. Update Conda Environment
 
-4. Run the Main Program
+如果别人更新了 environment.yml，你需要更新本地环境：
 
-进入项目根目录后执行：
+bash conda activate noobs conda env update -f environment.yml --prune 
 
-python src/main.py
+---
 
-如果运行成功，会看到主程序输出。
+## 4. Run Project
 
-⸻
+进入项目根目录后运行：
 
-5. Run Tests
+bash python src/main.py 
 
-本项目使用 pytest 进行基础测试。
+如果项目包含测试文件，可以运行：
 
-pytest
+bash pytest 
 
-⸻
+---
 
-6. GitHub Collaboration Workflow
+## 5. Branch Rule
 
-我们不直接在 main 分支上开发。
+不要直接在 main 分支上开发。
 
-推荐流程是：
+main 分支只保存稳定版本。
 
-main
-├── george-dev
-└── friend-dev
+每次做新任务，都从最新的 main 创建一个新分支。
 
-main 分支用于保存稳定版本。
+分支名按照任务命名，不按照人名命名。
 
-每个人在自己的分支上开发，完成后通过 Pull Request 合并到 main。
+推荐格式：
 
-⸻
+text feature/功能名 fix/问题名 docs/文档名 experiment/实验名 
 
-7. Create a New Branch
+示例：
 
-每次开始新功能前，先切回 main 并更新：
+text feature/main-program feature/pygame-demo feature/opencv-camera fix/test-error docs/update-readme experiment/sklearn-demo 
 
-git switch main
-git pull origin main
+---
 
-然后创建新分支：
+## 6. Daily Start Workflow
 
-git switch -c feature/your-feature-name
+每次开始工作前，先进入项目目录：
 
-例如：
+bash cd ~/Desktop/noobs_project 
 
-git switch -c feature/main-program
+激活 Conda 环境：
 
-⸻
+bash conda activate noobs 
 
-8. Commit Changes
+切换到 main：
 
-修改代码后，先查看状态：
+bash git switch main 
 
-git status
+拉取 GitHub 上最新的 main：
 
-添加文件：
+bash git pull origin main 
 
-git add .
+检查当前状态：
+
+bash git status 
+
+如果看到：
+
+text nothing to commit, working tree clean 
+
+说明当前工作区是干净的，可以开始新任务。
+
+---
+
+## 7. Create a Task Branch
+
+每次做一个任务，都创建一个新的任务分支。
+
+例如：添加主程序。
+
+bash git switch -c feature/main-program 
+
+例如：修改 README。
+
+bash git switch -c docs/update-readme 
+
+例如：修复测试错误。
+
+bash git switch -c fix/test-error 
+
+例如：添加 Pygame 示例。
+
+bash git switch -c feature/pygame-demo 
+
+查看当前分支：
+
+bash git branch 
+
+星号 * 所在的分支就是当前分支。
+
+---
+
+## 8. Edit Files
+
+在当前任务分支上修改代码或文档。
+
+例如创建 src/main.py：
+
+bash mkdir -p src  cat > src/main.py <<'EOF' def main():     print("Welcome to noobs_project!")     print("This is the main program.")     print("We are practicing GitHub collaboration.")   if __name__ == "__main__":     main() EOF 
+
+运行检查：
+
+bash python src/main.py 
+
+---
+
+## 9. Check Changes
+
+查看当前修改状态：
+
+bash git status 
+
+查看具体修改内容：
+
+bash git diff 
+
+查看当前分支：
+
+bash git branch 
+
+---
+
+## 10. Commit Changes
+
+添加所有修改：
+
+bash git add . 
 
 提交修改：
 
-git commit -m "describe what you changed"
+bash git commit -m "add main program" 
 
-例如：
+提交信息要简短清楚。
 
-git commit -m "add main program"
+推荐示例：
 
-⸻
+bash git commit -m "add main program" git commit -m "update README usage guide" git commit -m "fix calculator test" git commit -m "add pygame demo" git commit -m "add opencv camera example" 
 
-9. Push Branch to GitHub
+---
 
-第一次推送新分支：
+## 11. Push Branch to GitHub
 
-git push -u origin feature/your-feature-name
+第一次推送新分支时，需要写完整命令。
 
-之后同一分支再次推送，只需要：
+例如当前分支是 feature/main-program：
 
-git push
+bash git push -u origin feature/main-program 
 
-⸻
+如果当前分支是 docs/update-readme：
 
-10. Pull Request
+bash git push -u origin docs/update-readme 
 
-推送分支后，打开 GitHub 仓库页面：
+如果当前分支是 fix/test-error：
 
-https://github.com/polynomial1027/noobs_project
+bash git push -u origin fix/test-error 
+
+同一个分支之后再次推送，只需要：
+
+bash git push 
+
+---
+
+## 12. Create Pull Request
+
+推送分支后，打开 GitHub 仓库：
+
+text https://github.com/polynomial1027/noobs_project 
 
 点击：
 
-Compare & pull request
+text Compare & pull request 
 
-确认：
+确认合并方向：
 
-base: main
-compare: feature/your-feature-name
+text base: main compare: your-task-branch 
 
-然后创建 Pull Request。
+例如：
 
-检查没有问题后，点击：
+text base: main compare: feature/main-program 
 
-Merge pull request
+然后点击：
 
-把分支合并到 main。
+text Create pull request 
 
-⸻
+Pull Request 标题建议写清楚，例如：
 
-11. Sync Local Main After Merge
+text Add main program Update README usage guide Fix calculator test Add pygame demo Add opencv camera example 
+
+---
+
+## 13. Merge Pull Request
+
+如果 GitHub 显示没有冲突，可以点击：
+
+text Merge pull request 
+
+然后点击：
+
+text Confirm merge 
+
+这样任务分支的内容就合并进 main 了。
+
+合并后可以删除 GitHub 上的任务分支。
+
+---
+
+## 14. Sync Local Main After Merge
 
 GitHub 上合并 Pull Request 后，本地 main 不会自动更新。
 
-需要执行：
+需要回到终端执行：
 
-git switch main
-git pull origin main
+bash git switch main git pull origin main 
 
-这样本地 main 才会同步 GitHub 上的最新版本。
+确认最新内容已经同步：
 
-⸻
+bash git log --oneline 
 
-12. Collaboration Rules
+运行项目：
 
-为了减少冲突，我们约定：
+bash python src/main.py 
 
-1. 不直接在 main 上开发。
-2. 每个功能使用单独分支。
-3. 提交信息要写清楚。
-4. 合并前先运行程序和测试。
-5. 尽量不要两个人同时修改同一个文件的同一部分。
-6. 大文件不要直接上传到 GitHub。
-7. Conda 环境以 environment.yml 为准。
+---
 
-⸻
+## 15. Full Workflow Example
 
-13. Example Commands
+下面是一套完整流程，可以直接复制使用。
 
-完整开发流程示例：
+### Step 1: Start from latest main
 
-git switch main
-git pull origin main
-git switch -c feature/main-program
-# edit files here
-git status
-git add .
-git commit -m "add main program"
-git push -u origin feature/main-program
+bash cd ~/Desktop/noobs_project conda activate noobs git switch main git pull origin main git status 
 
-然后在 GitHub 上创建 Pull Request，并合并到 main。
+### Step 2: Create a task branch
 
-合并后同步本地：
+bash git switch -c feature/main-program 
 
-git switch main
-git pull origin main
+### Step 3: Edit files
 
-⸻
+bash mkdir -p src  cat > src/main.py <<'EOF' def main():     print("Welcome to noobs_project!")     print("This is the main program.")     print("We are practicing GitHub collaboration.")   if __name__ == "__main__":     main() EOF 
 
-14. Current Plan
+### Step 4: Test locally
 
-当前项目计划：
+bash python src/main.py pytest 
 
-* 创建 Conda 环境
-* 添加主程序 src/main.py
-* 添加基础测试
-* 添加 Jupyter Notebook 示例
-* 添加 OpenCV 示例
-* 添加 Pygame 示例
-* 添加简单机器学习示例
-* 练习 Pull Request
-* 练习 merge conflict
-* 完成一次双人协作开发流程
+### Step 5: Commit changes
 
-⸻
+bash git status git add . git commit -m "add main program" 
 
-15. Notes
+### Step 6: Push branch
 
-这个项目是学习型项目，重点是理解协作流程，而不是一开始就追求复杂功能。
+bash git push -u origin feature/main-program 
 
-每一次小修改都可以作为一次 GitHub 协作练习。
+### Step 7: Open Pull Request on GitHub
 
-保存后你可以执行：
+Open:
 
-git status
-git add readme.md
-git commit -m "add project README"
-git push
+text https://github.com/polynomial1027/noobs_project 
 
-如果你想把文件名改成 GitHub 标准的大写：
+Then click:
 
-mv readme.md README.md
-git add README.md
-git commit -m "rename readme to README"
-git push
+text Compare & pull request Create pull request 
+
+### Step 8: Merge Pull Request
+
+If there is no conflict, click:
+
+text Merge pull request Confirm merge 
+
+### Step 9: Sync local main
+
+bash git switch main git pull origin main python src/main.py 
+
+---
+
+## 16. Common Templates
+
+### Add a new feature
+
+bash cd ~/Desktop/noobs_project conda activate noobs git switch main git pull origin main git switch -c feature/your-feature-name  # edit files here  git status git add . git commit -m "add your feature" git push -u origin feature/your-feature-name 
+
+### Fix a bug
+
+bash cd ~/Desktop/noobs_project conda activate noobs git switch main git pull origin main git switch -c fix/bug-name  # fix files here  git status git add . git commit -m "fix bug name" git push -u origin fix/bug-name 
+
+### Update documentation
+
+bash cd ~/Desktop/noobs_project conda activate noobs git switch main git pull origin main git switch -c docs/update-readme  # edit README.md here  git status git add README.md git commit -m "update README" git push -u origin docs/update-readme 
+
+### Add an experiment
+
+bash cd ~/Desktop/noobs_project conda activate noobs git switch main git pull origin main git switch -c experiment/experiment-name  # add experiment files here  git status git add . git commit -m "add experiment" git push -u origin experiment/experiment-name 
+
+---
+
+## 17. Useful Git Commands
+
+查看当前分支：
+
+bash git branch 
+
+查看当前状态：
+
+bash git status 
+
+查看修改内容：
+
+bash git diff 
+
+查看提交历史：
+
+bash git log --oneline 
+
+切换到 main：
+
+bash git switch main 
+
+拉取最新 main：
+
+bash git pull origin main 
+
+查看远程仓库地址：
+
+bash git remote -v 
+
+---
+
+## 18. Important Rules
+
+1. 不要直接在 main 分支上开发。
+2. 每次任务都从最新的 main 创建新分支。
+3. 分支名按任务命名，不按人名命名。
+4. 修改前先 git pull origin main。
+5. 提交前先 git status。
+6. 合并前先本地运行程序。
+7. 合并 Pull Request 后，本地要重新 git pull origin main。
+8. Conda 环境以 environment.yml 为准。
+9. 大文件不要上传到 GitHub。
+10. 如果不确定当前在哪个分支，先运行 git branch。
