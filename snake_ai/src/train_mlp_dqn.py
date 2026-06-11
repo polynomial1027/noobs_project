@@ -19,6 +19,7 @@ from snake_ai.src.agents.mlp_dqn_agent import MLPDQNAgent
 from snake_ai.src.env.snake_env import SnakeEnv
 from snake_ai.src.rewards.reward_functions import get_available_reward_modes
 from snake_ai.src.utils.config import MLPDQNConfig, SnakeConfig
+from snake_ai.src.utils.plotting import plot_training_summary, save_training_log_csv
 from snake_ai.src.utils.timer import TrainingTimer
 
 
@@ -35,6 +36,11 @@ def train_mlp_dqn(
 
     scores_window = deque(maxlen=100)
     record_score = 0
+
+    training_rows = []
+    all_scores = []
+    all_avg_scores = []
+    all_losses = []
 
     timer = TrainingTimer()
 
@@ -120,6 +126,24 @@ def train_mlp_dqn(
         avg_score = float(np.mean(scores_window)) if scores_window else 0.0
         avg_loss = float(np.mean(episode_loss_values)) if episode_loss_values else 0.0
 
+        all_scores.append(score)
+        all_avg_scores.append(avg_score)
+        all_losses.append(avg_loss)
+
+        training_rows.append(
+            {
+                "episode": episode,
+                "score": score,
+                "record": record_score,
+                "avg100": avg_score,
+                "loss": avg_loss,
+                "epsilon": agent.epsilon,
+                "episode_time": timing.elapsed_seconds,
+                "total_time": timing.total_elapsed_seconds,
+                "reward_mode": reward_mode,
+            }
+        )
+
         print(
             f"Episode: {episode:4d} | "
             f"Score: {score:3d} | "
@@ -137,6 +161,27 @@ def train_mlp_dqn(
 
     agent.save(checkpoint_path)
     print(f"Final checkpoint saved to: {checkpoint_path}")
+
+    run_name = f"mlp_{reward_mode}"
+
+    csv_path = f"snake_ai/runs/{run_name}_training.csv"
+    plot_path = f"snake_ai/runs/{run_name}_training.png"
+
+    save_training_log_csv(
+        path=csv_path,
+        rows=training_rows,
+    )
+
+    plot_training_summary(
+        scores=all_scores,
+        avg_scores=all_avg_scores,
+        losses=all_losses,
+        path=plot_path,
+        title=f"MLP-DQN training summary ({reward_mode})",
+    )
+
+    print(f"Training log saved to: {csv_path}")
+    print(f"Training plot saved to: {plot_path}")
 
     env.close()
 

@@ -9,7 +9,5 @@ data/*.csv
 data/*.xlsx
 data/*.zip
 # Snake AI model checkpoints
-
 snake_ai/checkpoints/*.pth
-
 snake_ai/runs/

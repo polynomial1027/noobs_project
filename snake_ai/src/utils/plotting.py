@@ -25,6 +25,7 @@ def save_training_log_csv(
             "epsilon": 0.995,
             "episode_time": 0.2,
             "total_time": 0.2,
+            "reward_mode": "classic",
         }
     """
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -50,11 +51,6 @@ def plot_scores(
 ) -> None:
     """
     Plot episode scores.
-
-    Args:
-        scores: score per episode
-        path: optional path to save image
-        title: plot title
     """
     if not scores:
         return
@@ -120,4 +116,53 @@ def plot_losses(
         os.makedirs(os.path.dirname(path), exist_ok=True)
         plt.savefig(path, dpi=150, bbox_inches="tight")
 
+    plt.close()
+
+
+def plot_training_summary(
+    scores: Sequence[int | float],
+    avg_scores: Sequence[int | float],
+    losses: Sequence[int | float],
+    path: str,
+    title: str = "Snake AI training summary",
+) -> None:
+    """
+    Plot score, Avg100 score, and loss in one image.
+
+    Output:
+        A PNG image with three charts:
+            1. Episode score
+            2. Moving average score
+            3. Training loss
+    """
+    if not scores:
+        return
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    episodes = list(range(1, len(scores) + 1))
+
+    plt.figure(figsize=(12, 8))
+
+    plt.subplot(3, 1, 1)
+    plt.plot(episodes, scores)
+    plt.xlabel("Episode")
+    plt.ylabel("Score")
+    plt.title(title)
+    plt.grid(True)
+
+    plt.subplot(3, 1, 2)
+    plt.plot(episodes, avg_scores)
+    plt.xlabel("Episode")
+    plt.ylabel("Avg100 score")
+    plt.grid(True)
+
+    plt.subplot(3, 1, 3)
+    plt.plot(episodes, losses)
+    plt.xlabel("Episode")
+    plt.ylabel("Loss")
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.savefig(path, dpi=150, bbox_inches="tight")
     plt.close()
